@@ -2,6 +2,9 @@
 .env
 .venv/
 
+# Raw data
+data/bronze/
+
 # Python cache
 __pycache__/
 *.pyc
