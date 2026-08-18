@@ -47,25 +47,26 @@ if not API_KEY:
 
 def get_league_entries(tier, division):
     """
-    Every time this function is executed it returns a list of all 
-    the players in the tier and division specified
+    Returns the players stored at a given tier and rank at the time of execution
     """
-    url = (
+    PLAYER_PATH = (
         f"https://{PLATFORM}.api.riotgames.com"
         f"/lol/league/v4/entries/"
         f"{QUEUE}/{tier}/{division}"
     )
 
-    response = requests.get(url, headers={"X-Riot-Token": API_KEY})
-    response.raise_for_status()
+    response = requests.get(PLAYER_PATH, headers={"X-Riot-Token": API_KEY})
+    response.raise_for_status()     #In case there is a error response from server
 
-    return response.json()
+    return response.json()          #json to pyton object
 
 
 # SELECT RANDOM SEED
 
 def get_random_seed(tier):
-
+    """
+    Returns a random player from the given tier and a random rank. 
+    """
     divisions = DIVISIONS.copy()
 
     random.shuffle(divisions)
@@ -76,8 +77,8 @@ def get_random_seed(tier):
             division=division,
         )
 
-        if players:
-            player = random.choice(players)
+        if players:                         #This will only work if there are players
+            player = random.choice(players) #Picks one player
 
             #To keep a record of the tier and division at time of the sample
             player["sampling_tier"] = tier
@@ -90,11 +91,15 @@ def get_random_seed(tier):
     )
 
 
-# -----------------------------
 # EXTRACT SEEDS FOR ALL TIERS
-# -----------------------------
 
 def extract_seed_players():
+
+    """
+    The function is the one that executes the previous ones. It stores the seed players that
+    will be used to get historic matches and grow the database. After selecting a player from
+    each tier and a random division the player dict gets stored  
+    """
     seeds = []
 
     for tier in TIERS:
@@ -106,7 +111,7 @@ def extract_seed_players():
 
     extracted_at = datetime.now(timezone.utc)
 
-    output_dir = (Path("data")/ "bronze"/ "riot"/ "players")
+    output_dir = (Path("data")/ "bronze"/ "players")
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -121,20 +126,12 @@ def extract_seed_players():
         "extracted_at": extracted_at.isoformat(),
         "platform": PLATFORM,
         "queue": QUEUE,
-        "seeds": seeds,
+        "seeds": seeds
     }
 
-    with output_file.open(
-        "w",
-        encoding="utf-8",
-    ) as file:
-        json.dump(
-            output,
-            file,
-            ensure_ascii=False,
-            indent=2,
-        )
-
+    #to write the .json
+    with output_file.open("w", encoding="utf-8") as file:
+        json.dump(output, file, ensure_ascii=False, indent=2)
     print(
         f"Saved {len(seeds)} seed players "
         f"to {output_file}"
@@ -143,10 +140,9 @@ def extract_seed_players():
     return seeds
 
 
-# -----------------------------
 # RUN DIRECTLY
-# -----------------------------
 
+#This is neccesary so the extraction doesn't occur everytime I call a function from this file.
 if __name__ == "__main__":
     seed_players = extract_seed_players()
 
