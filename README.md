@@ -17,6 +17,7 @@ The pipeline is designed around a Bronze / Silver / Gold architecture:
 players reducing or stopping their activity.
 
 ## Architecture
+```
 Riot Games API / Data Dragon
         ↓
      Extract
@@ -32,6 +33,7 @@ Riot Games API / Data Dragon
       Gold
         ↓
  Churn Modelling
+```
 
 PostgreSQL is used as the analytical database and runs in Docker.
 
