@@ -35,9 +35,7 @@ DIVISIONS = [
 # API KEY
 
 load_dotenv()
-
 API_KEY = os.getenv("RIOT_API_KEY")
-
 if not API_KEY:
     raise ValueError("RIOT_API_KEY not found in .env")
 
@@ -110,9 +108,7 @@ def extract_seed_players():
         seeds.append(player)
 
     extracted_at = datetime.now(timezone.utc)
-
     output_dir = (Path("data")/ "bronze"/ "players")
-
     output_dir.mkdir(parents=True, exist_ok=True)
 
     filename = (
