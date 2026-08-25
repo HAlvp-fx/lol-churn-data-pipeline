@@ -23,7 +23,7 @@ def load_champions(input_file):
         stats = champion.get("stats", [])
 
         row= {
-            "champion_id": int(champion["key"]),
+        "champion_id": int(champion["key"]),
         "champion_code": champion["id"],
         "name": champion["name"],
         "title": champion.get("title"),
@@ -75,10 +75,7 @@ def load_champions(input_file):
     password = os.getenv("POSTGRES_PASSWORD")
     database = os.getenv("POSTGRES_DB")
 
-    database_url = (
-        f"postgresql+psycopg://"
-        f"{user}:{password}@localhost:5432/{database}"
-    )
+    database_url = (f"postgresql+psycopg://{user}:{password}@localhost:5432/{database}")
 
     engine = create_engine(database_url)
 

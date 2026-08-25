@@ -78,7 +78,7 @@ def get_match(match_id):
 
 # ACTIVITY FUNCTIONS
 
-def extract_match_history(candidate_file,feature_start,cohort_date):
+def extract_match_history(candidate_file, feature_start, cohort_date):
     """
     Downloads the full 90 day raw history for the T0 candidate sample
     """
@@ -87,42 +87,79 @@ def extract_match_history(candidate_file,feature_start,cohort_date):
         candidate_data = json.load(file)
 
     players = candidate_data["players"]
-
     print(f"Loaded {len(players)} candidate players.")
 
-    player_matches = {}
-    unique_match_ids = set()
+    # Save the player -> match IDs map before downloading all MatchDto files
+    manifest_dir = Path("data") / "bronze" / "match_manifests"
+    manifest_dir.mkdir(parents=True, exist_ok=True)
+    manifest_file = (manifest_dir/ f"match_history_{cohort_date.strftime('%Y%m%d')}.json")
 
-    # First get the match IDs for every sampled player
-    for i, player in enumerate(players, start=1):
-        puuid = player["puuid"]
-        tier = player["sampling_tier"]
+    # If manifest exists, reuse it
+    if manifest_file.exists():
+        print(f"Manifest already exists: {manifest_file}")
+        print("Loading match IDs from manifest...")
 
-        print(f"Getting history {i}/{len(players)} ({tier})...")
+        with manifest_file.open("r", encoding="utf-8") as file:
+            manifest = json.load(file)
 
-        match_ids = get_all_match_ids(
-            puuid=puuid,
-            start_date=feature_start,
-            end_date=cohort_date,
-        )
+        player_matches = manifest["player_matches"]
 
-        player_matches[puuid] = match_ids
-        unique_match_ids.update(match_ids)
+        unique_match_ids = set()
 
-        print(f"  {len(match_ids)} matches found")
+        for match_ids in player_matches.values():
+            unique_match_ids.update(match_ids)
 
-    print(f"\nUnique matches to download: {len(unique_match_ids)}")
+        print(f"Loaded {len(unique_match_ids)} unique match IDs from manifest.")
+    else: 
+        print("No manifest found. Getting player histories from Riot...")
+
+        player_matches = {}
+        unique_match_ids = set()
+
+        for i, player in enumerate(players, start=1):
+            puuid = player["puuid"]
+            tier = player["sampling_tier"]
+
+            print(f"Getting history {i}/{len(players)} ({tier})..." )
+
+            match_ids = get_all_match_ids(puuid=puuid,start_date=feature_start, end_date=cohort_date)
+
+            player_matches[puuid] = match_ids
+            unique_match_ids.update(match_ids)
+
+            print(f" {len(match_ids)} matches found")
+
+        print(f"\nUnique matches to download:{len(unique_match_ids)}")
+
+        manifest = {
+            "extracted_at": datetime.now(timezone.utc).isoformat(),
+            "cohort_date": cohort_date.isoformat(),
+            "feature_window_start": feature_start.isoformat(),
+            "feature_window_end": cohort_date.isoformat(),
+            "feature_window_days": (cohort_date - feature_start).days,
+            "queue_id": MATCH_QUEUE_ID,
+            "candidate_player_count": len(players),
+            "unique_match_count": len(unique_match_ids),
+            "player_matches": player_matches
+        }
+
+        with manifest_file.open("w", encoding="utf-8") as file:
+            json.dump( manifest, file,ensure_ascii=False, indent=2)
+
+        print(f"Manifest saved to {manifest_file}")
 
     # Raw MatchDto files
-    match_output_dir = ( Path("data")/ "bronze" / "matches" / cohort_date.strftime("%Y%m%d"))
-    match_output_dir.mkdir( parents=True, exist_ok=True)
+    match_output_dir = ( Path("data")/ "bronze"/ "matches"/ cohort_date.strftime("%Y%m%d"))
+    match_output_dir.mkdir(parents=True, exist_ok=True)
+
+    print(f"Raw matches stored in {match_output_dir}")
 
     sorted_match_ids = sorted(unique_match_ids)
 
     for i, match_id in enumerate(sorted_match_ids, start=1):
         output_file = match_output_dir / f"{match_id}.json"
 
-        # Super useful if the extraction gets interrupted halfway through
+        # If it was already downloaded before, don't ask Riot again
         if output_file.exists():
             print(f"Match {i}/{len(sorted_match_ids)} {match_id} already exists: skip")
             continue
@@ -132,34 +169,9 @@ def extract_match_history(candidate_file,feature_start,cohort_date):
         match = get_match(match_id)
 
         with output_file.open("w", encoding="utf-8") as file:
-            json.dump(match, file, ensure_ascii=False, indent=2)
+            json.dump( match, file, ensure_ascii=False, indent=2)
 
-    # This keeps track of which player produced which match IDs
-    manifest_dir = (Path("data")/ "bronze"/ "match_manifests")
-    manifest_dir.mkdir( parents=True, exist_ok=True)
-
-    manifest_file = (manifest_dir/ f"match_history_{cohort_date.strftime('%Y%m%d')}.json")
-
-    manifest = {
-        "extracted_at": datetime.now(timezone.utc).isoformat(),
-        "cohort_date": cohort_date.isoformat(),
-        "feature_window_start": feature_start.isoformat(),
-        "feature_window_end": cohort_date.isoformat(),
-        "feature_window_days": (cohort_date - feature_start).days,
-        "queue_id": MATCH_QUEUE_ID,
-        "candidate_player_count": len(players),
-        "unique_match_count": len(unique_match_ids),
-        "player_matches": player_matches,
-    }
-
-    with manifest_file.open("w", encoding="utf-8") as file:
-        json.dump(manifest, file, ensure_ascii=False, indent=2)
-
-    print(f"\nMatch history manifest saved to {manifest_file}")
-    print(f"Raw matches stored in {match_output_dir}")
-
-    return manifest_file
-
+    return manifest_file, match_output_dir
 
 if __name__ == "__main__":
 
