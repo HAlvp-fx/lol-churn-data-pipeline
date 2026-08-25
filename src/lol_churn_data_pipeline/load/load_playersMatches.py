@@ -667,13 +667,13 @@ def load_match_participants(input_folder):
                     "missions": json.dumps(participant.get("missions")),
                     "perks": json.dumps(participant.get("perks")),
                     }   
-                rows.append(row)
-                total_rows += 1
+                    rows.append(row)
+                    total_rows += 1
 
-                #This is bc the data size is very big and is better to control it through batches
-                if len(rows) >= BATCH_SIZE:
-                    connection.execute(insert_query, rows)
-                    rows.clear()
+                    #This is bc the data size is very big and is better to control it through batches
+                    if len(rows) >= BATCH_SIZE:
+                        connection.execute(insert_query, rows)
+                        rows.clear()
 
             # I could have kept only the data for the players in the sample
             # list, but since this is Bronze I believe it is not correct to

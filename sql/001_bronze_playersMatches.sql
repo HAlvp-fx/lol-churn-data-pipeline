@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS players_matches(
+CREATE TABLE IF NOT EXISTS player_matches_bronze(
     -- Identifiers
     match_id TEXT NOT NULL,
     puuid TEXT NOT NULL,
@@ -208,7 +208,5 @@ CREATE TABLE IF NOT EXISTS players_matches(
     missions JSONB,
     perks JSONB,
 
-    PRIMARY KEY (match_id, puuid),
-
-    FOREIGN KEY (match_id)
-        REFERENCES matches(match_id)
+    PRIMARY KEY (match_id, puuid)
+    );

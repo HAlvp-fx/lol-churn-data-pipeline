@@ -6,9 +6,34 @@ from lol_churn_data_pipeline.load.load_players import load_players
 
 from lol_churn_data_pipeline.extract.extract_matches import extract_match_history
 from lol_churn_data_pipeline.load.load_playersMatches import load_match_participants
+
 from datetime import date, timedelta
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+from sqlalchemy import create_engine, text
 
+def create_bronze_tables():
+    load_dotenv()
+
+    user = os.getenv("POSTGRES_USER")
+    password = os.getenv("POSTGRES_PASSWORD")
+    database = os.getenv("POSTGRES_DB")
+
+    database_url = (f"postgresql+psycopg://{user}:{password}@localhost:5432/{database}")
+
+    engine = create_engine(database_url)
+    sql_files = [
+        Path("sql/001_bronze_champions.sql"),
+        Path("sql/001_bronze_players.sql"),
+        Path("sql/001_bronze_playersMatches.sql"),
+    ]
+
+    with engine.begin() as connection:
+        for sql_file in sql_files:
+            with sql_file.open("r", encoding="utf-8") as file:
+                sql_command = file.read()
+            connection.execute(text(sql_command))
 
 
 def run_pipeline(stratification_method, 
@@ -17,9 +42,11 @@ def run_pipeline(stratification_method,
                 extract_matches=False,
                 do_load_ddragon=False,
                 do_load_players=False,
-                do_load_matches=False):
+                do_load_matches=False,
+                create_bronze_tabs=True):
 
-    
+    if create_bronze_tabs:
+        create_bronze_tables()
     #Data dragon stuff extraction & load
     if extract_ddragon:
         latest_version = get_latest_version()
@@ -56,8 +83,13 @@ def run_pipeline(stratification_method,
 #I have already downloaded the matches for the sample on the set day so I'll
 # just use the looad functions
 #For reference:
-#extract_data=False = NO Riot request and NO re-extraction
-#load_data=True = YES load existing Bronze into PostgreSQL
+#extract_ddragon=False -> no request to riot api
+#extract_players=False -> no request to riot api
+# extract_matches=False -> no request to riot api
+#do_load_ddragon=False -> no load the extracted champion and maybe item data in the tables
+#do_load_players=False -> no load the extracted player data in the tables
+#do_load_matches=False -> no load the extracted matches data in the tables
+#create_bronze_tables=True -> creates the sql tables in the specified db, docker needs to be up
 
 
 #Personal settings 
