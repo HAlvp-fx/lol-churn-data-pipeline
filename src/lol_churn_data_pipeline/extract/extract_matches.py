@@ -4,16 +4,9 @@ from datetime import datetime, timezone, date, timedelta
 from pathlib import Path
 
 from lol_churn_data_pipeline.extract.riot import riot_get
-
-
-# CONFIG
-
-MATCH_BASE_URL = ("https://europe.api.riotgames.com/lol/match/v5/matches")
-# Ranked Solo/Duo
+from lol_churn_data_pipeline.config import MATCH_BASE_URL,FEATURE_START, COHORT_DATE, FEATURE_START,FEATURE_WINDOW_DAYS,MATCHES_FOLDER, TARGET_BY_TIER, MATCH_QUEUE_ID
 
 # MATCH-V5 FUNCTIONS
-MATCH_QUEUE_ID = 420
-
 
 def get_match_ids(puuid, start_date, end_date, start=0, count=100):
     """
@@ -174,12 +167,7 @@ def extract_match_history(candidate_file, feature_start, cohort_date):
     return manifest_file, match_output_dir
 
 if __name__ == "__main__":
-
-    # This date defines T0 for this cohort.
-    COHORT_DATE = date(2026, 8, 20)
-
-    FEATURE_START = COHORT_DATE - timedelta(days=90)
-
+ 
     CANDIDATE_FILE = Path(
         "data/bronze/players/"
         "candidate_players_20260820_213216.json"

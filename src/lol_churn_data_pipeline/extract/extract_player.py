@@ -10,45 +10,19 @@ import requests
 from dotenv import load_dotenv
 
 from lol_churn_data_pipeline.extract.riot import riot_get
+from lol_churn_data_pipeline.config import RANDOM_SEED, DIVISIONS,TIERS, PLATFORM, QUEUE, TARGET_BY_TIER
 
 # CONFIGURATION
-
-RANDOM_SEED = 3
 random.seed(RANDOM_SEED)
 
-PLATFORM = "euw1"
-QUEUE = "RANKED_SOLO_5x5"
-
-TIERS = [
-    "IRON",
-    "BRONZE",
-    "SILVER",
-    "GOLD",
-    "PLATINUM",
-    "EMERALD",
-    "DIAMOND",
-]
-
-DIVISIONS = [
-    "I",
-    "II",
-    "III",
-    "IV",
-]
-
-
 # API KEY
-
 load_dotenv()
-
 API_KEY = os.getenv("RIOT_API_KEY")
-
 if not API_KEY:
     raise ValueError("RIOT_API_KEY not found in .env")
 
 
 # GET PLAYERS FROM LEAGUE-V4
-
 def get_league_entries(tier, division):
     """
     Returns the ranked players available for a given tier and division at extraction time.
@@ -130,15 +104,7 @@ def extract_candidate_players(target_by_tier):
     print(f"\nSaved {len(players)} candidate players to {output_file}")
     return output_file
 
-TARGET_BY_TIER = {
-    "IRON": 200,
-    "BRONZE": 200,
-    "SILVER": 200,
-    "GOLD": 200,
-    "PLATINUM": 200,
-    "EMERALD": 200,
-    "DIAMOND": 200,
-}
+
 if __name__ == "__main__":
     extract_candidate_players(
         target_by_tier=TARGET_BY_TIER,

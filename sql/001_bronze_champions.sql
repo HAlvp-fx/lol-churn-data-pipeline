@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS champions (
+CREATE TABLE IF NOT EXISTS champions_bronze (
     --champion info
     champion_id INTEGER NOT NULL,
     champion_code VARCHAR(50) NOT NULL,
