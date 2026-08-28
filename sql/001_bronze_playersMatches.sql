@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS player_matches_bronze(
     -- Time
     time_played INTEGER,
     longest_time_spent_living INTEGER,
-    total_time_spent_dead INTEGER,
+    total_time_spent_dead FLOAT,
 
     -- Champion and position
     champion_id INTEGER,

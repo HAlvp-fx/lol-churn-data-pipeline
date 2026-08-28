@@ -1,0 +1,17 @@
+TABLA PLAYER
+    - 1400 rows, una por judagor trackeado
+    - BASICOS DE BRONZE: puuid, sampling_tier, sampling_division, league_points, wins, losses, queue, platform, extracted_at
+    - NEW: FAV ROLE, MOST PLAYED ROLE (ASSIGNED), MOST PLAYED CHAMPION, TOTAL GAMES 90DYAS, AVG GAMES WEEK
+    - PRIMARY KEY: PUUID
+
+TABLA PLAYER_MATCH
+    - LEFT JOIN DE TABLA MATCH BRONZE CON PLAYERS EN PUUID
+    - Se limpian todos los jugadores qu eno han sido selecionados en el sample
+    - PRIMARY KEY: match id y puuid
+    - N distinto por cada uno de los 1400 players
+
+TABLA MATCHES
+    - AVG TOTAL DE STATS DE LOS PAPERS Y POR EQUIPOS (team_id: 100 Y 200)
+    -PRIMARY KEY: MATCH ID
+
+TABLAS DDRGAON
