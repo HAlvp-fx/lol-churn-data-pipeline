@@ -320,6 +320,7 @@ GROUP BY summoner_2_id
 ORDER BY rows DESC;
 */
 
+/*
 -- player_behavior
 SELECT
     jsonb_object_keys(player_behavior) AS key,
@@ -364,3 +365,21 @@ SELECT
     ) AS empty_perks
 
 FROM player_matches_bronze;
+*/
+SELECT
+    double_kills,
+    triple_kills,
+    quadra_kills,
+    penta_kills,
+    largest_multi_kill,
+    COUNT(*) AS rows
+FROM player_matches_bronze
+WHERE penta_kills > 0
+GROUP BY
+    double_kills,
+    triple_kills,
+    quadra_kills,
+    penta_kills,
+    largest_multi_kill
+ORDER BY rows DESC
+LIMIT 30;

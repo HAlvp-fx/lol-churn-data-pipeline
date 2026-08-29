@@ -67,11 +67,12 @@ IF NOT EXISTS player_matches_silver (
     killing_sprees INTEGER,
     largest_killing_spree INTEGER,
     largest_multi_kill INTEGER,
-    multikill_count INTEGER,
     first_blood_kill BOOLEAN,           
     /*
-    Individual multikill fields (double to penta/unreal kills) are collapsed into
-    multikill_count while largest_multi_kill preserves the highest intensity event.
+    Individual multikill fields (double, triple, quadra, penta and unreal kills)
+    are dropped in Silver due to their highly imbalanced distributions and
+    overlapping interpretation.
+    
     first_blood_kill is retained as a direct early-game performance/economic event.
     first_blood_assist is dropped because it overlaps with the same event and adds
     limited additional information.
@@ -189,5 +190,161 @@ be discarded in the insert)*/
     );
 
 INSERT INTO player_matches_silver(
-
+    match_id ,
+    puuid ,
+    team_id ,
+    summoner_level ,
+    time_played ,
+    total_time_spent_dead ,
+    champion_id ,
+    champ_level ,
+    champ_experience ,
+    individual_position,
+    team_position ,                     
+    position_assigned_by_matchmaking , 
+    selected_role_preferences ,         
+    win ,
+    eligible_for_progression ,
+    game_ended_in_early_surrender ,
+    game_ended_in_surrender ,
+    was_afk ,
+    kills ,
+    deaths ,
+    assists ,
+    killing_sprees ,
+    largest_killing_spree ,
+    largest_multi_kill ,
+    multikill_count ,
+    first_blood_kill ,           
+    gold_earned ,
+    gold_spent ,
+    items_purchased ,
+    consumables_purchased ,
+    item_0 ,
+    item_1 ,
+    item_2 ,
+    item_3 ,
+    item_4 ,
+    item_5 ,
+    item_6 ,
+    role_bound_item ,
+    total_minions_killed ,
+    neutral_minions_killed ,
+    total_ally_jungle_minions_killed ,
+    total_enemy_jungle_minions_killed ,
+    total_damage_dealt ,
+    total_damage_dealt_to_champions ,
+    total_damage_taken ,
+    damage_self_mitigated ,
+    total_heal ,
+    total_heals_on_teammates ,
+    total_units_healed ,
+    total_damage_shielded_on_teammates ,
+    time_ccing_others ,
+    total_time_cc_dealt ,
+    damage_dealt_to_turrets ,
+    damage_dealt_to_objectives ,
+    damage_dealt_to_epic_monsters ,
+    turret_takedowns ,
+    inhibitor_takedowns ,
+    dragon_kills ,
+    baron_kills ,
+    objectives_stolen_participation ,
+    first_tower_participation ,
+    vision_score ,
+    wards_placed ,
+    wards_killed ,
+    detector_wards_placed ,
+    total_pings ,
+    total_spell_casts ,
+    summoner_1_id ,
+    summoner_2_id ,
+    summoner_spell_casts ,
+    perks JSONB
 )
+SELECT 
+--COALESCE IS VERY IMPORTANT--> some fields might have null as value and when adding that can give errors
+    pmbron.match_id,
+    pmbron.puuid,
+    pmbron.team_id,
+    pmbron.summoner_level,
+    pmbron.time_played,
+    pmbron.total_time_spent_dead,
+    pmbron.champion_id,
+    pmbron.champ_level,
+    pmbron.champ_experience,
+    pmbron.individual_position,
+    pmbron.team_position,
+    pmbron.position_assigned_by_matchmaking,
+    pmbron.selected_role_preferences,
+    pmbron.win,
+    pmbron.eligible_for_progression,
+    pmbron.game_ended_in_early_surrender,
+    pmbron.game_ended_in_surrender,
+    pmbron.was_afk,
+    pmbron.kills,
+    pmbron.deaths,
+    pmbron.assists,
+    pmbron.killing_sprees,
+    pmbron.largest_killing_spree,
+    pmbron.largest_multi_kill,
+    pmbron.first_blood_kill,
+    pmbron.gold_earned,
+    pmbron.gold_spent,
+    pmbron.items_purchased,
+    pmbron.consumables_purchased,
+    pmbron.item_0,
+    pmbron.item_1,
+    pmbron.item_2,
+    pmbron.item_3,
+    pmbron.item_4,
+    pmbron.item_5,
+    pmbron.item_6,
+    pmbron.role_bound_item,
+    pmbron.total_minions_killed,
+    pmbron.neutral_minions_killed,
+    pmbron.total_ally_jungle_minions_killed,
+    pmbron.total_enemy_jungle_minions_killed,
+    pmbron.total_damage_dealt,
+    pmbron.total_damage_dealt_to_champions,
+    pmbron.total_damage_taken,
+    pmbron.damage_self_mitigated,
+    pmbron.total_heal,
+    pmbron.total_heals_on_teammates,
+    pmbron.total_units_healed,
+    pmbron.total_damage_shielded_on_teammates,
+    pmbron.time_ccing_others,
+    pmbron.total_time_cc_dealt,
+    pmbron.damage_dealt_to_turrets,
+    pmbron.damage_dealt_to_objectives,
+    pmbron.damage_dealt_to_epic_monsters,
+    pmbron.turret_takedowns,
+    pmbron.inhibitor_takedowns,
+    pmbron.dragon_kills,
+    pmbron.baron_kills,
+    COALESCE(pmbron.objectives_stolen, 0) + COALESCE(pmbron.objectives_stolen_assists, 0)
+    AS objectives_stolen_participation,
+    pmbron.first_tower_participation,
+    pmbron.vision_score,
+    pmbron.wards_placed,
+    pmbron.wards_killed,
+    pmbron.detector_wards_placed,
+    COALESCE(pmbron.all_in_pings, 0) + COALESCE(pmbron.assist_me_pings, 0)
+    + COALESCE(pmbron.basic_pings, 0)  + COALESCE(pmbron.command_pings, 0)
+    + COALESCE(pmbron.danger_pings, 0)  + COALESCE(pmbron.enemy_missing_pings, 0)
+    + COALESCE(pmbron.enemy_vision_pings, 0) + COALESCE(pmbron.get_back_pings, 0)
+    + COALESCE(pmbron.hold_pings, 0) + COALESCE(pmbron.need_vision_pings, 0)
+    + COALESCE(pmbron.on_my_way_pings, 0) + COALESCE(pmbron.push_pings, 0)
+    + COALESCE(pmbron.retreat_pings, 0) + COALESCE(pmbron.vision_cleared_pings, 0)
+    AS total_pings,
+    COALESCE(pmbron.spell_1_casts, 0)  + COALESCE(pmbron.spell_2_casts, 0)
+    + COALESCE(pmbron.spell_3_casts, 0) + COALESCE(pmbron.spell_4_casts, 0)
+    AS total_spell_casts,
+    pmbron.summoner_1_id,
+    pmbron.summoner_2_id,
+    COALESCE(pmbron.summoner_1_casts, 0) + COALESCE(pmbron.summoner_2_casts, 0)
+    AS summoner_spell_casts,
+    pmbron.perks
+FROM player_matches_bronze AS pmbron
+    INNER JOIN players_bronze AS pbron ON pmbron.puuid = pbron.puuid;
+
