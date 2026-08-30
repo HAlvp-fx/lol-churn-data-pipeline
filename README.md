@@ -82,6 +82,61 @@ The current historical Data Dragon coverage includes **7 versions, from 16.10.1 
 
 Nested structures that are not yet normalized are preserved as JSONB in the Bronze layer to avoid discarding source information before the Silver transformation stage.
 
+## Silver layer
+
+The Silver layer transforms the source-preserving Bronze data into cleaned and validated relational datasets while maintaining traceability to the original Riot data.
+
+The current Silver layer contains:
+
+- **1,400 players** in `players_silver`;
+- **78,954 tracked-player match records** in `player_matches_silver`;
+- **78,680 unique matches** in `matches_silver`;
+- **295,437 unique teammate relationships** in `teammates_silver`;
+- versioned champion, item, rune and summoner spell reference tables.
+
+The tables have deliberately different grains:
+
+- `players_silver` — one row per sampled player;
+- `player_matches_silver` — one row per sampled player and match;
+- `matches_silver` — one row per unique match;
+- `teammates_silver` — one row per unique unordered teammate pair;
+- Data Dragon Silver tables — one entity per historical Data Dragon version.
+
+`player_matches_silver` contains only players belonging to the modelling cohort. In contrast, `matches_silver` and `teammates_silver` are constructed using the complete Bronze participant data so that match and teammate context is not lost when the other participants are outside the original cohort.
+
+Teammate relationships use a canonical unordered pair representation to prevent storing both `(A, B)` and `(B, A)`. Relationships are retained even when players only appeared together once; thresholds for repeated interaction are intentionally deferred to the analytical and feature-engineering stages.
+
+Historical Data Dragon entities remain versioned in Silver. Mechanical attributes are preserved so that changes between patches can later be measured and evaluated alongside changes in player behaviour.
+
+Match versions are mapped to Data Dragon using their major/minor patch version, with validation confirming that every observed match patch has a corresponding and unambiguous Data Dragon version.
+
+### Silver validation
+
+Silver is validated against Bronze before being used for feature engineering.
+
+The validation suite currently contains **56 checks** covering:
+
+- expected tables and primary keys;
+- row-count reconciliation between Bronze and Silver;
+- table grains and duplicate detection;
+- cohort integrity;
+- player-level aggregate reconstruction;
+- participant-level transformation logic;
+- match-level aggregation;
+- team composition and winner consistency;
+- teammate relationship reconstruction;
+- historical Data Dragon version preservation;
+- patch-specific champion, item and summoner spell resolution.
+
+The completed validation run produced:
+
+- **0 blocking failures**
+- **51 passed checks**
+- **5 warnings requiring review**
+
+The remaining warnings correspond to source-level or boundary cases rather than failed Bronze-to-Silver transformations. These include a small number of unrecognised team positions, matches around the historical-window boundary, matches without a reported winning team, teammate role counts affected by missing positions, and special item identifiers requiring additional interpretation.
+
+These cases are retained rather than silently modified so that unusual source behaviour remains traceable during later analytical stages.
 
 ## Tech stack
 
@@ -103,29 +158,32 @@ Nested structures that are not yet normalized are preserved as JSONB in the Bron
 **Currently implemented**
 
 - Stratified ranked player sampling through League-V4
-- Fixed modelling cohort at T0 across ranks from Iron to Diamond
-- 90-day historical match extraction through Match-V5
-- Match deduplication and complete participant-level data extraction
-- Historical Data Dragon extraction for the required patch range
-- Versioned champion metadata extraction and loading
-- Versioned item metadata extraction and loading
-- Versioned rune metadata extraction and loading
-- Versioned summoner spell metadata extraction and loading
-- Bronze PostgreSQL schemas for players, match participants, champions, items, runes and summoner spells
-- Batched loading of participant-level Match-V5 data
-- Raw nested data preservation using JSONB
+- Fixed 1,400-player modelling cohort at T0
+- 90-day historical Match-V5 extraction
+- Match ID deduplication before full Match-V5 retrieval
+- Complete participant-level Bronze preservation
+- Historical Data Dragon extraction across the required patch range
+- Versioned champion, item, rune and summoner spell ingestion
+- Bronze PostgreSQL schema and batched ingestion pipeline
+- Nested source-data preservation using JSONB
 - Dockerized PostgreSQL environment
 - Configurable pipeline for independent extraction and loading stages
-- Data profiling and Bronze schema validation
-- PostgreSQL row-count validation after ingestion
+- Bronze data profiling and validation
+- Silver player-level transformation
+- Silver participant-level transformation
+- Silver match-level aggregation
+- Silver teammate relationship construction
+- Versioned Silver Data Dragon reference tables
+- Match-to-Data Dragon patch mapping
+- Bronze-to-Silver reconciliation and validation
+- Silver integrity, grain and quality checks
 
 **Next steps**
 
-- Build Silver player and match-level tables
-- Clean and normalize Bronze data into the Silver layer
-- Associate historical matches with their corresponding Data Dragon version
-- Enrich historical matches with patch-specific champion, item, rune, and summoner spell metadata
-- Define churn observation and target windows
-- Feature engineering
+- Define the churn observation and target windows
+- Build Gold player-level feature tables
+- Engineer behavioural and activity features
+- Engineer teammate and social-interaction features
+- Measure relevant historical patch changes
 - Exploratory data analysis
 - Churn modelling and evaluation
