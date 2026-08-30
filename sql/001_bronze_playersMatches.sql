@@ -1,9 +1,15 @@
+DROP TABLE IF EXISTS player_matches_bronze;
 CREATE TABLE IF NOT EXISTS player_matches_bronze(
     -- Identifiers
     match_id TEXT NOT NULL,
     puuid TEXT NOT NULL,
     participant_id INTEGER NOT NULL,
     team_id INTEGER,
+    
+    game_creation_timestamp BIGINT,
+    game_start_timestamp BIGINT,
+    game_end_timestamp BIGINT,
+    game_version TEXT,
 
     -- Summoner information
     summoner_id TEXT,
@@ -207,6 +213,9 @@ CREATE TABLE IF NOT EXISTS player_matches_bronze(
     player_behavior JSONB,
     missions JSONB,
     perks JSONB,
+    -- Nested match data kept raw in Bronze
+    teams JSONB,
+    tournament_code TEXT,
 
     PRIMARY KEY (match_id, puuid)
     );

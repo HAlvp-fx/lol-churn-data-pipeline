@@ -14,7 +14,7 @@ import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 
-def create_bronze_tables():
+def create_sql_tables(sql_files):
     load_dotenv()
 
     user = os.getenv("POSTGRES_USER")
@@ -24,14 +24,6 @@ def create_bronze_tables():
     database_url = (f"postgresql+psycopg://{user}:{password}@localhost:5432/{database}")
 
     engine = create_engine(database_url)
-    sql_files = [
-        Path("sql/001_bronze_champions.sql"),
-        Path("sql/001_bronze_players.sql"),
-        Path("sql/001_bronze_playersMatches.sql"),
-        Path("sql/001_bronze_items.sql"),
-        Path("sql/001_bronze_runes.sql"),
-        Path("sql/001_bronze_summoners.sql"),
-    ]
 
     with engine.begin() as connection:
         for sql_file in sql_files:
@@ -40,17 +32,27 @@ def create_bronze_tables():
             connection.execute(text(sql_command))
 
 
-def run_pipeline(stratification_method, 
+def run_pipeline (stratification_method, 
                 extract_ddragon=False,
                 extract_players=False,
                 extract_matches=False,
                 do_load_ddragon=False,
                 do_load_players=False,
                 do_load_matches=False,
-                create_bronze_tabs=False):
+                create_bronze_tabs=False,
+                do_silver_matches=False,
+                do_silver_players=False,
+                do_silver_playersMatches=False):
 
     if create_bronze_tabs:
-        create_bronze_tables()
+        create_sql_tables([
+        Path("sql/001_bronze_champions.sql"),
+        Path("sql/001_bronze_players.sql"),
+        Path("sql/001_bronze_playersMatches.sql"),
+        Path("sql/001_bronze_items.sql"),
+        Path("sql/001_bronze_runes.sql"),
+        Path("sql/001_bronze_summoners.sql"),
+    ])
     
 
     # Players extraction & load
@@ -76,9 +78,20 @@ def run_pipeline(stratification_method,
     #Data dragon stuff extraction & load
     if extract_ddragon:
         extract_historical_ddragon(matches_folder)
+        print("Extraction of ddragon done!")
     if do_load_ddragon:
         load_historical_ddragon(DDRAGON_FOLDERS)
-            
+        print("Load of ddragon done!")
+    if do_silver_matches :
+        create_sql_tables([Path("sql/002_silver_matches.sql")])
+        print("Creation and transform of matches in silver done!")
+    if do_silver_players :
+        create_sql_tables([Path("sql/002_silver_players.sql")])
+        print("Creation and transform of players in silver done!")
+    if do_silver_playersMatches :
+        create_sql_tables([Path("sql/002_silver_playersMatches.sql")])
+        print("Creation and transform of players' matches in silver done!")
+
 
 
 
@@ -100,10 +113,13 @@ target_by_tier=TARGET_BY_TIER
 if __name__ == "__main__":
     run_pipeline(
         stratification_method=target_by_tier,
-        create_bronze_tabs=False,
+        create_bronze_tabs=True,
         extract_ddragon=False,
         extract_players=False,
         extract_matches=False,
-        do_load_ddragon=True,
+        do_load_ddragon=False,
         do_load_players=False,
-        do_load_matches=False)
+        do_load_matches=True,
+        do_silver_matches=True,
+        do_silver_players=True,
+        do_silver_playersMatches=True)

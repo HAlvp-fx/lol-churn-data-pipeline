@@ -20,6 +20,10 @@ def load_match_participants(input_folder):
     insert_query = text("""
         INSERT INTO player_matches_bronze (
         match_id ,
+        game_creation_timestamp,
+        game_start_timestamp ,
+        game_end_timestamp ,
+        game_version,
         puuid  ,
         participant_id,
         team_id ,
@@ -161,10 +165,16 @@ def load_match_participants(input_folder):
         player_augment_6, 
         player_behavior,
         missions ,
-        perks 
+        perks ,
+        teams,
+        tournament_code
         )
         VALUES (
         :match_id ,
+        :game_creation_timestamp,
+        :game_start_timestamp,
+        :game_end_timestamp,
+        :game_version,
         :puuid  ,
         :participant_id,
         :team_id ,
@@ -306,10 +316,16 @@ def load_match_participants(input_folder):
         :player_augment_6, 
         CAST(:player_behavior AS JSONB),
         CAST(:missions AS JSONB),
-        CAST(:perks AS JSONB)
+        CAST(:perks AS JSONB),
+        CAST(:teams AS JSONB),
+        :tournament_code
             )
         ON CONFLICT (match_id, puuid)
         DO UPDATE SET
+            game_creation_timestamp = EXCLUDED.game_creation_timestamp,
+            game_start_timestamp= EXCLUDED.game_start_timestamp,
+            game_end_timestamp = EXCLUDED.game_end_timestamp,
+            game_version = EXCLUDED.game_version,
             participant_id = EXCLUDED.participant_id,
             team_id = EXCLUDED.team_id,
             summoner_id = EXCLUDED.summoner_id,
@@ -450,9 +466,10 @@ def load_match_participants(input_folder):
             player_augment_6 = EXCLUDED.player_augment_6,
             player_behavior = EXCLUDED.player_behavior,
             missions = EXCLUDED.missions,
-            perks = EXCLUDED.perks
+            perks = EXCLUDED.perks,
+            teams = EXCLUDED.teams,
+            tournament_code = EXCLUDED.tournament_code
         """)
-          
     rows = []
     total_rows = 0
     total_files = 0   
@@ -463,12 +480,22 @@ def load_match_participants(input_folder):
             with file_path.open("r", encoding="utf-8") as file:
                 match = json.load(file)
                 match_id = match["metadata"]["matchId"]
+                game_creation_timestamp = match["info"]["gameCreation"]
+                game_start_timestamp = match["info"]["gameStartTimestamp"]
+                game_end_timestamp = match["info"]["gameEndTimestamp"]
+                game_version = match["info"]["gameVersion"]
+                teams = match["info"].get("teams")
+                tournament_code = match["info"].get("tournamentCode")
                 # Important!! The metadata.participants only contains PUUID strings
                 participants = match["info"]["participants"]
                 for participant in participants:
                     row = {
                     # Identifiers
                     "match_id": match_id,
+                    "game_creation_timestamp" : game_creation_timestamp,
+                    "game_start_timestamp" : game_start_timestamp,
+                    "game_end_timestamp" : game_end_timestamp,
+                    "game_version" : game_version,
                     "puuid": participant.get("puuid"),
                     "participant_id": participant.get("participantId"),
                     "team_id": participant.get("teamId"),
@@ -666,6 +693,8 @@ def load_match_participants(input_folder):
                     "player_behavior": json.dumps(participant.get("PlayerBehavior")),
                     "missions": json.dumps(participant.get("missions")),
                     "perks": json.dumps(participant.get("perks")),
+                    "teams": json.dumps(teams),
+                    "tournament_code": tournament_code,
                     }   
                     rows.append(row)
                     total_rows += 1

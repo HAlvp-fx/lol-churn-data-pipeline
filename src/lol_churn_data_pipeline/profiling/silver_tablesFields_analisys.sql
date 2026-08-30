@@ -367,19 +367,6 @@ SELECT
 FROM player_matches_bronze;
 */
 SELECT
-    double_kills,
-    triple_kills,
-    quadra_kills,
-    penta_kills,
-    largest_multi_kill,
-    COUNT(*) AS rows
-FROM player_matches_bronze
-WHERE penta_kills > 0
-GROUP BY
-    double_kills,
-    triple_kills,
-    quadra_kills,
-    penta_kills,
-    largest_multi_kill
-ORDER BY rows DESC
-LIMIT 30;
+    COUNT(*) FILTER ( WHERE dragon_kills > 1) AS dragon_kills_study,
+    COUNT(*) FILTER ( WHERE baron_kills > 1) AS baron_kills_study
+FROM player_matches_bronze ;
