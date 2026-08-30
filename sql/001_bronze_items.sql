@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS items_bronze (
     maps JSONB,
     -- Stats
     stats JSONB,
+    effect JSONB,
 
     -- Rune metadata when present
     rune JSONB,

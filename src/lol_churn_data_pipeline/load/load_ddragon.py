@@ -198,12 +198,13 @@ def load_items(input_file, version):
     rows=[]
     for item_id, item in items["data"].items():
         row = {
-            "item_id": int(item_id),
+            "item_id": item_id,
             "ddragon_version": version,
 
             "name": item.get("name"),
             "description": item.get("description"),
             "colloq": item.get("colloq"),
+            "plaintext": item.get("plaintext"),
 
             "from_items": json.dumps(item.get("from")),
             "into_items": json.dumps(item.get("into")),
@@ -227,6 +228,7 @@ def load_items(input_file, version):
             "tags": json.dumps(item.get("tags")),
             "maps": json.dumps(item.get("maps")),
             "stats": json.dumps(item.get("stats")),
+            "effect": json.dumps(item.get("effect")),
             "rune": json.dumps(item.get("rune")),
         }
         rows.append(row)
@@ -251,6 +253,7 @@ def load_items(input_file, version):
         name,
         description,
         colloq,
+        plaintext,
         from_items,
         into_items,
         depth,
@@ -269,6 +272,7 @@ def load_items(input_file, version):
         tags,
         maps,
         stats,
+        effect,
         rune           
     )
     VALUES (
@@ -277,6 +281,7 @@ def load_items(input_file, version):
         :name,
         :description,
         :colloq,
+        :plaintext,
         CAST(:from_items AS JSONB),
         CAST(:into_items AS JSONB),
         :depth,
@@ -295,6 +300,7 @@ def load_items(input_file, version):
         CAST(:tags AS JSONB),
         CAST(:maps AS JSONB),
         CAST(:stats AS JSONB),
+        CAST(:effect AS JSONB),
         CAST(:rune AS JSONB)           
     )
     ON CONFLICT (item_id, ddragon_version)
@@ -304,6 +310,7 @@ def load_items(input_file, version):
         name= EXCLUDED.name,
         description= EXCLUDED.description,
         colloq= EXCLUDED.colloq,
+        plaintext= EXCLUDED.plaintext,
         from_items= EXCLUDED.from_items,
         into_items= EXCLUDED.into_items,
         depth= EXCLUDED.depth,
@@ -322,6 +329,7 @@ def load_items(input_file, version):
         tags= EXCLUDED.tags,
         maps= EXCLUDED.maps,
         stats= EXCLUDED.stats,
+        effect= EXCLUDED.effect,
         rune= EXCLUDED.rune
 """)
     #Execute the command written before

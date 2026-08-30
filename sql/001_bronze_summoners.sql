@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS summoner_spells_bronze;
+
 CREATE TABLE IF NOT EXISTS summoner_spells_bronze (
     -- Identifiers
     summoner_spell_id INTEGER NOT NULL,

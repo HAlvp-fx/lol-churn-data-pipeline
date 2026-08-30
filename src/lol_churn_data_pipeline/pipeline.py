@@ -42,7 +42,9 @@ def run_pipeline (stratification_method,
                 create_bronze_tabs=False,
                 do_silver_matches=False,
                 do_silver_players=False,
-                do_silver_playersMatches=False):
+                do_silver_playersMatches=False,
+                do_silver_ddragon=False,
+                do_silver_teammates=False):
 
     if create_bronze_tabs:
         create_sql_tables([
@@ -91,6 +93,15 @@ def run_pipeline (stratification_method,
     if do_silver_playersMatches :
         create_sql_tables([Path("sql/002_silver_playersMatches.sql")])
         print("Creation and transform of players' matches in silver done!")
+    if do_silver_ddragon :
+            create_sql_tables([Path("sql/002_silver_champions.sql"),
+                               Path("sql/002_silver_runes.sql"),
+                               Path("sql/002_silver_summoners.sql"),
+                               Path("sql/002_silver_items.sql")])
+            print("Creation and transform& insert of ddragon data in silver done!")
+    if do_silver_teammates :
+            create_sql_tables([Path("sql/002_silver_teammates.sql")])
+            print("Creation and insert data into table teammates in silver done!")
 
 
 
@@ -117,9 +128,11 @@ if __name__ == "__main__":
         extract_ddragon=False,
         extract_players=False,
         extract_matches=False,
-        do_load_ddragon=False,
+        do_load_ddragon=True,
         do_load_players=False,
-        do_load_matches=True,
-        do_silver_matches=True,
-        do_silver_players=True,
-        do_silver_playersMatches=True)
+        do_load_matches=False,
+        do_silver_matches=False,
+        do_silver_players=False,
+        do_silver_playersMatches=False,
+        do_silver_ddragon=True,
+        do_silver_teammates=True)

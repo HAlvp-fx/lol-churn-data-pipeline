@@ -1,4 +1,3 @@
-DROP TABLE IF EXISTS player_matches_bronze;
 CREATE TABLE IF NOT EXISTS player_matches_bronze(
     -- Identifiers
     match_id TEXT NOT NULL,
