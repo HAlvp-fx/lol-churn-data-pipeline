@@ -1,7 +1,7 @@
 [project]
 name = "lol-churn-data-pipeline"
 version = "0.1.0"
-description = "Add your description here"
+description = "End-to-end data pipeline for League of Legends player churn analysis using Riot APIs, PostgreSQL and a Bronze/Silver/Gold architecture"
 readme = "README.md"
 authors = [
     { name = "Henar", email = "alvp.henar@gmail.com" }
