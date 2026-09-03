@@ -51,5 +51,59 @@ IF TABLE NOT EXISTS CREATE player_features_gold(
 
     -- target y (when observation window closes )
     disengaged_15d BOOLEAN,
+    inactive_7d BOOLEAN,
 
+);
+
+INSERT INTO player_features_gold (
+    puuid,
+    sampling_tier,
+    sampling_division ,
+    tier ,
+    rank ,
+    matches_15d ,
+    matches_30d ,
+    matches_60d ,
+    matches_90d ,
+    active_days_15d ,
+    active_days_90d ,
+    days_since_last_match ,
+    avg_days_between_matches_15d ,
+    avg_days_between_matches_90d ,
+    activity_change ,
+    gap_change ,
+    
+    -- match duration
+    avg_match_duration_15d ,
+    avg_match_duration_90d ,
+    match_duration_change ,
+
+    -- role/ champ
+    main_role ,
+    main_role_share ,
+    role_switch_rate ,
+    unique_champions ,
+    main_champion_share ,
+    off_role_champion_rate ,
+
+    -- performance,
+    relative_damage ,
+    relative_gold ,
+    relative_farming ,
+    relative_vision ,
+    recent_performance_change ,
+    objective_damage ,
+    -- social
+    unique_teammates ,
+    repeat_teammate_rate ,
+    max_teammate_match_share ,
+    repeat_teammate_rate_15d ,
+    social_change ,
+
+    -- patch meta
+    patches_played ,
+    meta_adoption_rate ,
+    champion_switch_rate_between_patches ,
+    disengaged_15d ,
+    inactive_7d,
 )

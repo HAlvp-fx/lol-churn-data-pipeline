@@ -1,0 +1,27 @@
+Creo q voy a hacer una tabla para el churn pero mas de base para calc pq los granos son dist
+
+1) Adopcion del meta
+rollo calc campeones/runas/items/spells mas populares por patch? o los q mejoran o ver los q se ponen
+flojos y comprobar si la tendencia cambia.
+-champ, item,rune & summoners mas jugado en cada patch
+-cambio de un patch a otr
+-comparar con un global de champ/item/rune/summ mas usado
+- el feature final seria meta-adoption-rate? o asi (igual deberia separarlo por champion-item etc)
+2)avg games per day & week -> DEmediuk
+-con 15-30-60-90 dias de historico
+- rollo avg_day, avg_week active_days? n de matches?
+
+3)longitud de games tmbn? si por el paper de demediuk
+avg match duration para 15-30-60-90 -> recent cambios associados al dissengagement? Sie segun d, comprobar en mi sample
+
+4) roles con mayor tendencia a dejarlo
+- tanto el jugar siempre un rol como el cambiar mucho -> afecta?
+- main_role? ptcg_main_role vs el ersto? role_switch_rate? uniques?
+Consigue el rol q quiere? matched_primary_role_ratio?
+5) jugar campeones pensados para otro rol/lane afecta?
+
+
+6) n de partidas con amigos (o pctg)
+con la tabla de teammates sacar cnts partidas juega con la misma gente (no tengo acceso a lista d amigos)
+y si hay gente con la q juega mas del 30/50% evidencia?
+cambios de 15-30 -60 y 90?
