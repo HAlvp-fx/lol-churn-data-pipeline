@@ -60,13 +60,12 @@ INSERT INTO players_silver (
 )
 WITH match_stats AS (
 
-    SELECT pmbron.puuid, COUNT(pmbron.match_id) AS matches_observed,
-        TO_TIMESTAMP(
-            MIN(pmbron.game_start_timestamp) / 1000.0
-        ) AT TIME ZONE 'UTC' AS first_match_at,
-        TO_TIMESTAMP(
-            MAX(pmbron.game_start_timestamp) / 1000.0
-        ) AT TIME ZONE 'UTC' AS last_match_at,
+    SELECT pmbron.puuid, 
+        COUNT(pmbron.match_id) AS matches_observed,
+        TO_TIMESTAMP(MIN(pmbron.game_start_timestamp) / 1000.0) 
+        AT TIME ZONE 'UTC' AS first_match_at,
+        TO_TIMESTAMP(MAX(pmbron.game_start_timestamp) / 1000.0) 
+        AT TIME ZONE 'UTC' AS last_match_at,
         COUNT(DISTINCT pmbron.champion_id) AS distinct_champions_used
     FROM player_matches_bronze AS pmbron
     GROUP BY pmbron.puuid
