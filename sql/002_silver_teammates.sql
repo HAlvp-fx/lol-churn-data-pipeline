@@ -24,8 +24,15 @@ CREATE TABLE IF NOT EXISTS teammates_silver (
 
     PRIMARY KEY (player_1_puuid, player_2_puuid)
 );
+
+-- fixed temporal cutoff for predictor data
+WITH params AS (
+    SELECT TIMESTAMP '2026-08-20 00:00:00' AS t0
+)
+
 -- teh logic of this is a bit more tricky but I saw examples of it working
 -- and it is better to fo it in sql than in python (it's jist more efficient)
+
 INSERT INTO teammates_silver (
     player_1_puuid,
     player_2_puuid,
@@ -43,6 +50,7 @@ INSERT INTO teammates_silver (
     p2_bottom_matches,
     p2_utility_matches
 )
+
 SELECT
     p1.puuid AS player_1_puuid,
     p2.puuid AS player_2_puuid,
@@ -52,19 +60,19 @@ SELECT
 
     -- Player 1 roles
     COUNT(DISTINCT p1.match_id) FILTER (WHERE p1.team_position = 'TOP')::INTEGER AS p1_top_matches,
-    COUNT(DISTINCT p1.match_id) FILTER ( WHERE p1.team_position = 'JUNGLE')::INTEGER AS p1_jungle_matches,
-    COUNT(DISTINCT p1.match_id) FILTER ( WHERE p1.team_position = 'MIDDLE')::INTEGER AS p1_middle_matches,
-    COUNT(DISTINCT p1.match_id) FILTER ( WHERE p1.team_position = 'BOTTOM' )::INTEGER AS p1_bottom_matches,
-    COUNT(DISTINCT p1.match_id) FILTER ( WHERE p1.team_position = 'UTILITY')::INTEGER AS p1_utility_matches,
+    COUNT(DISTINCT p1.match_id) FILTER (WHERE p1.team_position = 'JUNGLE')::INTEGER AS p1_jungle_matches,
+    COUNT(DISTINCT p1.match_id) FILTER (WHERE p1.team_position = 'MIDDLE')::INTEGER AS p1_middle_matches,
+    COUNT(DISTINCT p1.match_id) FILTER (WHERE p1.team_position = 'BOTTOM')::INTEGER AS p1_bottom_matches,
+    COUNT(DISTINCT p1.match_id) FILTER (WHERE p1.team_position = 'UTILITY')::INTEGER AS p1_utility_matches,
 
     -- Player 2 roles
     COUNT(DISTINCT p1.match_id) FILTER (WHERE p2.team_position = 'TOP')::INTEGER AS p2_top_matches,
-    COUNT(DISTINCT p1.match_id) FILTER ( WHERE p2.team_position = 'JUNGLE')::INTEGER AS p2_jungle_matches,
+    COUNT(DISTINCT p1.match_id) FILTER (WHERE p2.team_position = 'JUNGLE')::INTEGER AS p2_jungle_matches,
     COUNT(DISTINCT p1.match_id) FILTER (WHERE p2.team_position = 'MIDDLE')::INTEGER AS p2_middle_matches,
-    COUNT(DISTINCT p1.match_id) FILTER ( WHERE p2.team_position = 'BOTTOM' )::INTEGER AS p2_bottom_matches,
-    COUNT(DISTINCT p1.match_id) FILTER ( WHERE p2.team_position = 'UTILITY')::INTEGER AS p2_utility_matches
+    COUNT(DISTINCT p1.match_id) FILTER (WHERE p2.team_position = 'BOTTOM')::INTEGER AS p2_bottom_matches,
+    COUNT(DISTINCT p1.match_id) FILTER (WHERE p2.team_position = 'UTILITY')::INTEGER AS p2_utility_matches
 
-FROM player_matches_bronze AS p1--base table for the matches
+FROM player_matches_bronze AS p1 --base table for the matches
 
 INNER JOIN player_matches_bronze AS p2
     ON p1.match_id = p2.match_id
@@ -72,10 +80,22 @@ INNER JOIN player_matches_bronze AS p2
 
     -- Thiseeps each pair only once: A-B yes B-A no A-A no
     AND p1.puuid < p2.puuid
-WHERE EXISTS (SELECT 1 FROM players_bronze AS cohort
-    WHERE cohort.puuid = p1.puuid
-       OR cohort.puuid = p2.puuid)
-       --This part here checks if at least one of the players is my tracked cohort (using the players in bronze as  filter (like silver player macthes))
+
+INNER JOIN matches_silver AS mas
+    ON p1.match_id = mas.match_id
+
+CROSS JOIN params AS prm
+
+WHERE mas.game_creation_at >= prm.t0 - INTERVAL '90 days'
+    AND mas.game_creation_at < prm.t0
+
+    --This part here checks if at least one of the players is my tracked cohort (using the players in bronze as  filter (like silver player macthes))
+    AND EXISTS (
+        SELECT 1
+        FROM players_bronze AS cohort
+        WHERE cohort.puuid = p1.puuid
+           OR cohort.puuid = p2.puuid
+    )
 
 GROUP BY p1.puuid, p2.puuid
 
